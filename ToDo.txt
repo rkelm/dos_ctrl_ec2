@@ -1,5 +1,3 @@
-* Create README file
-* Test: Make instanceid.txt, multi instande compatible -> instanceid_<NAME>.txt
 * Create volume-snapshot-creation batch file.
 * Create send-any-command batch file. Show command output to batch file user.
 	* Use aws ssm?
@@ -8,3 +6,4 @@
 	* Add logging to app init-script to check. Is everything saved correctly? (Create log file with service script output (starting, stopping,...))
 * Add batch file with save/backup command. Add to app service script.
 * More error checking at instance termination cli calls.
+* Create volume from snapshot before launching.

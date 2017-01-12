@@ -7,13 +7,15 @@ SET EXCURRENTDIR=%CD%
 REM Switch current directory to installation directory.
 CD /D %~dp0
 
-REM Check if the default config file should be used.
+REM Check if the default config file and instanceid.txt should be used.
 IF [%1] == [] (
 	SET CONFIGFILE=ec2_config_default.bat
-	) ELSE (
+    SET INSTIDFILE=instanceid.txt
+) ELSE (
 	SET CONFIGFILE=config\ec2_config_%1.bat
-	)
-	
+    SET INSTIDFILE=instanceid_%1.txt
+)
+
 REM Check if config file exists. If not complain.
 IF NOT EXIST %CONFIGFILE% (
 	ECHO Konfigurationsdatei %CONFIGFILE% nicht gefunden.
@@ -24,19 +26,19 @@ REM Load configuration variables.
 CALL %CONFIGFILE%
 
 REM Simple Check: "Is instance already running?"
-IF EXIST instanceid.txt (
-  ECHO Es läuft bereits eine %APP_NAME% Server Instanz!
-  ECHO Start einer neuen Instanz wird abgebrochen.
-  ECHO Bitte erst die alte Instanz beenden.
-  PAUSE
-  EXIT /b 1
+IF EXIST %INSTIDFILE% (
+	ECHO Es läuft bereits eine %APP_NAME% Server Instanz!
+	ECHO Start einer neuen Instanz wird abgebrochen.
+	ECHO Bitte erst die alte Instanz beenden.
+	PAUSE
+	EXIT /b 1
 )
 
 REM Check for running instance by searching for tag in aws cloud.
-aws ec2 describe-instances --filters Name=instance-state-name,Values=running Name=tag:%TAGKEY%,Values=%TAGVALUE% --output=text --query Reservations[*].Instances[*].InstanceId > instanceid.txt
+aws ec2 describe-instances --filters Name=instance-state-name,Values=running Name=tag:%TAGKEY%,Values=%TAGVALUE% --output=text --query Reservations[*].Instances[*].InstanceId > %INSTIDFILE%
 REM Delete instance id file if it is empty.
-for %%F in ("instanceid.txt") do if %%~zF equ 0 del "%%F"
-IF EXIST instanceid.txt (
+for %%F in ("%INSTIDFILE%") do if %%~zF equ 0 del "%%F"
+IF EXIST %INSTIDFILE% (
   ECHO Es läuft bereits eine %APP_NAME% Server Instanz!
   ECHO Start einer neuen Instanz wird abgebrochen.
   ECHO Bitte erst die alte Instanz beenden.
@@ -46,11 +48,11 @@ IF EXIST instanceid.txt (
 
 REM Launch Amazon Linux Instance. Run prepare_server.sh on server.
 ECHO Starte AWS EC2 Instanz.
-aws ec2 run-instances --image-id %IMAGEID% --instance-type %INSTANCETYPE% --key-name %KEYPAIR% --security-group-ids %SECURITYGROUPSID% --instance-initiated-shutdown-behavior terminate --region %REGION% --subnet-id %SUBNETID% --user-data file://prepare_server.sh --output text --query Instances[*].InstanceId > instanceid_%1.txt
-SET /P INSTANCEID=<instanceid_%1.txt
+aws ec2 run-instances --image-id %IMAGEID% --instance-type %INSTANCETYPE% --key-name %KEYPAIR% --security-group-ids %SECURITYGROUPSID% --instance-initiated-shutdown-behavior terminate --region %REGION% --subnet-id %SUBNETID% --user-data file://prepare_server.sh --output text --query Instances[*].InstanceId > %INSTIDFILE%
+SET /P INSTANCEID=<%INSTIDFILE%
 
 IF [%INSTANCEID%] == [] (
-  DEL instanceid.txt
+  DEL %INSTIDFILE%
   ECHO Start der Instanz gescheitert.
   EXIT /b 1
 )

@@ -1,0 +1,72 @@
+{
+   "Version": "2012-10-17",
+   "Statement": [{
+      "Effect": "Allow",
+      "Action": [
+         "ec2:DescribeInstances", "ec2:DescribeImages",
+         "ec2:DescribeKeyPairs","ec2:DescribeVpcs", "ec2:DescribeSubnets", "ec2:DescribeSecurityGroups",
+		 "ec2:DescribeVolumes", "ec2:DescribeVolumeStatus", 
+		"ec2:DescribeAvailabilityZones", "ec2:TerminateInstances", "ec2:wait", "ec2:CreateTags"
+	  ],
+	  "Resource": "*"
+   },
+   {
+      "Effect": "Allow",
+      "Action":"sns:Publish",
+      "Resource": [
+         "arn:aws:sns:eu-central-1:*:Minecraft_Server"
+      ]
+   },
+   {
+      "Effect": "Allow",
+      "Action":"ec2:RunInstances",
+      "Resource": [
+         "arn:aws:ec2:eu-central-1:*:network-interface/*",
+         "arn:aws:ec2:eu-central-1:*:volume/*",
+         "arn:aws:ec2:eu-central-1:*:key-pair/Power_User",
+         "arn:aws:ec2:eu-central-1:*:security-group/*",
+         "arn:aws:ec2:eu-central-1:*:subnet/*"
+      ]
+   },
+   {
+      "Effect": "Allow",
+      "Action": "ec2:RunInstances",
+      "Resource": [
+         "arn:aws:ec2:eu-central-1:*:instance/*"
+      ],
+      "Condition": {
+         "StringEquals": {
+            "ec2:InstanceType": ["c4.large", "t2.medium", "t2.small", "t2.micro"]
+         }
+      }
+   },
+   {
+      "Effect": "Allow",
+      "Action": "ec2:RunInstances",
+      "Resource": [ 
+            "arn:aws:ec2:eu-central-1::image/ami-*"
+      ],
+      "Condition": {
+         "StringEquals": {
+            "ec2:Owner": "amazon"
+         }
+      }
+   },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:AttachVolume",
+        "ec2:DetachVolume"
+      ],
+      "Resource": "arn:aws:ec2:eu-central-1:*:instance/*"
+     },
+   {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:AttachVolume",
+        "ec2:DetachVolume"
+      ],
+      "Resource": "arn:aws:ec2:eu-central-1:*:volume/*"
+	}
+   ]
+}

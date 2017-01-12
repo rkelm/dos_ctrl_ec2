@@ -35,11 +35,11 @@ Currently batch file output is in german.
 
 # main files
 The following are the main files used in this project.
-* AppRunner_policy.json - AWS IAM policy document example. The json structure in this file shows an example for an IAM policy document you could attach to an IAM User to restrict his permisssions. The example includes only the permisssions needed to execute the AWS cli calls used in the included batch files. The example only permits use of the AWS region europe "eu-central-1". You can change this by editing the file.
+* AppRunner_policy.json - AWS IAM policy document example. The json structure in this file shows an example for an IAM policy document you could attach to an IAM user to restrict permisssions. The example includes only the permisssions needed to execute the AWS cli calls used in the included batch files. The example only permits use of the AWS region "eu-central-1". You can change this by editing the file.
 * ec2_config_default.bat - This is the standard configuration used, when no configuration is passed as a parameter to the batch files. Better than to edit this file, is to copy it for each different ec2 instance to the subdirectory "config" as a template and then edit the copied config file.
 * ec2_launch.bat - Run this batch file with the <NAME> of the config file as the only parameter. When the configuration file is correct, it will start the ec2 instance. If there already is an ec2 instance using the given tags, then no new instance will be started.
 * ec2_terminate.bat - Run this batch with the <NAME> of the config file as the only parameter. When the configuration file is correct, it will terminate the running ec2 instance. If no ec2 instance using the configured tags is running, the batch will complain and exit.
-* prepare_server.sh -
+* prepare_server.sh - This bash script is executed on the ec2 instance right after start up. It installs security patches, mounts the volume and runs "start.sh".
 * setup_dns.bat - Optional example script to update dynDNS service. Update it to use your preferred dynDNS service. (I use the utility curl to update my no-ip dynDNS service.)
 * ToDo.txt - Scribble with some notes about what to implement next.
 

@@ -41,6 +41,7 @@ The following are the main files used in this project.
 * ec2_terminate.bat - Run this batch with the _NAME_ of the config file as the only parameter. When the configuration file is correct, it will terminate the running ec2 instance. If no ec2 instance using the configured tags is running, the batch will complain and exit.
 * prepare_server.sh - This bash script is executed on the ec2 instance right after start up. It installs security patches, mounts the volume and runs "start.sh".
 * setup_dns.bat - Optional example script to update dynDNS service. Update it to use your preferred dynDNS service. (I use the utility curl to update my no-ip dynDNS service.)
+* build_package.bat - Batch file to run, to create deployment package.
 * ToDo.txt - Scribble with some notes about what to implement next.
 
 # runtime files

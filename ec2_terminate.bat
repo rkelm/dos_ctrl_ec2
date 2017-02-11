@@ -1,5 +1,6 @@
 @ECHO OFF
 REM Batch file to terminate ec2 instance.
+SETLOCAL enabledelayedexpansion
 
 REM Remember previous current directory.
 SET EXCURRENTDIR=%CD%
@@ -15,31 +16,28 @@ IF [%1] == [] (
 	SET CONFIGFILE=config\ec2_config_%1.bat
     SET INSTIDFILE=instanceid_%1.txt
 )
-	
+
 REM Check if config file exists. If not complain.
 IF NOT EXIST %CONFIGFILE% (
 	ECHO Konfigurationsdatei %CONFIGFILE% nicht gefunden.
 	EXIT /b 1
-	)
+)
 
 REM Load configuration variables.
 CALL %CONFIGFILE%
 
-REM Simple Check: "Is an instance running?"
+REM Check for running instance by searching for tag in aws cloud.
+ECHO Suche Instanzen mit Tag %TAGKEY% = %TAGVALUE% und Status running.
+aws ec2 describe-instances --filters Name=instance-state-name,Values=running Name=tag:%TAGKEY%,Values=%TAGVALUE% --output=text --query Reservations[*].Instances[*].InstanceId > %INSTIDFILE%
+REM Delete instance id file if it is empty.
+FOR %%F IN ("%INSTIDFILE%") DO IF %%~zF equ 0 DEL "%%F"
 IF NOT EXIST %INSTIDFILE% (
-   REM Check for running instance by searching for tag in aws cloud.
-   ECHO Suche Instanzen mit Tag %TAGKEY% = %TAGVALUE% und Status running.
-   aws ec2 describe-instances --filters Name=instance-state-name,Values=running Name=tag:%TAGKEY%,Values=%TAGVALUE% --output=text --query Reservations[*].Instances[*].InstanceId > %INSTIDFILE%
-   REM Delete instance id file if it is empty.
-   for %%F in ("%INSTIDFILE%") do if %%~zF equ 0 del "%%F"
-   IF NOT EXIST %INSTIDFILE% (
-		ECHO Es läuft keine Minecraft Server Instanz, die beendet werden kann.
-		PAUSE
-		EXIT /b 1
-		)
-   )
+	ECHO Es läuft keine %APP_NAME% Instanz, die beendet werden könnte.
+	PAUSE
+	EXIT /B 1
+)
 
-set /P INSTANCEID=<%INSTIDFILE%
+SET /P INSTANCEID=<%INSTIDFILE%
 
 REM Terminate instance.
 ECHO Beende AWS EC2 Instanz mit ID %INSTANCEID%.
@@ -51,11 +49,12 @@ REM Wait for end of Termination.
 ECHO Warte auf Abschluss der Terminierung ...
 aws ec2 wait instance-terminated --instance-ids %INSTANCEID%
 
-ECHO Die Instanz ist terminiert.
-
-REM Send notice about terminated instance.
-IF NOT [%SNS_TOPIC_ARN%] == [] (
-  aws sns publish --topic-arn "%SNS_TOPIC_ARN%" --subject "Minecraft Server mit Instanz ID %INSTANCEID% beendet" --message "Minecraft Server beendet, Instanz ID %INSTANCEID%." --output text > messageid.txt
+IF NOT ERRORLEVEL 1 (
+	ECHO Die Instanz ist terminiert.
+	REM Send notice about terminated instance.
+	IF NOT [%SNS_TOPIC_ARN%] == [] (
+		aws sns publish --topic-arn "%SNS_TOPIC_ARN%" --subject "Minecraft Server mit Instanz ID %INSTANCEID% beendet" --message "Minecraft Server beendet, Instanz ID %INSTANCEID%." --output text > messageid.txt
+	)
 )
 
 IF [%1] == [] (

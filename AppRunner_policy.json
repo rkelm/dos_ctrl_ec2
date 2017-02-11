@@ -6,7 +6,7 @@
          "ec2:DescribeInstances", "ec2:DescribeImages",
          "ec2:DescribeKeyPairs","ec2:DescribeVpcs", "ec2:DescribeSubnets", "ec2:DescribeSecurityGroups",
 		 "ec2:DescribeVolumes", "ec2:DescribeVolumeStatus", 
-		"ec2:DescribeAvailabilityZones", "ec2:TerminateInstances", "ec2:wait", "ec2:CreateTags"
+		"ec2:DescribeAvailabilityZones", "ec2:TerminateInstances", "ec2:wait", "ec2:CreateTags", "ec2:CreateSnapshot"
 	  ],
 	  "Resource": "*"
    },

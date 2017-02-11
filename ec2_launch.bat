@@ -1,5 +1,6 @@
 @ECHO OFF
 REM Batch file to launch ec2 instance.
+SETLOCAL enabledelayedexpansion
 
 REM Remember previous current directory.
 SET EXCURRENTDIR=%CD%
@@ -19,19 +20,32 @@ IF [%1] == [] (
 REM Check if config file exists. If not complain.
 IF NOT EXIST %CONFIGFILE% (
 	ECHO Konfigurationsdatei %CONFIGFILE% nicht gefunden.
-	EXIT /b 1
+	EXIT /B 1
 	)
 	
 REM Load configuration variables.
 CALL %CONFIGFILE%
 
-REM Simple Check: "Is instance already running?"
+REM Check: "Is the last from this client startet instance still running?"
 IF EXIST %INSTIDFILE% (
-	ECHO Es läuft bereits eine %APP_NAME% Server Instanz!
-	ECHO Start einer neuen Instanz wird abgebrochen.
-	ECHO Bitte erst die alte Instanz beenden.
-	PAUSE
-	EXIT /b 1
+	REM Load old instance id from file.
+	SET INSTANCEID=EMPTY
+	SET /P INSTANCEID=<%INSTIDFILE%
+
+	IF NOT [!INSTANCEID!] == [EMPTY] (
+		REM Ask aws if this is a known running/pending/shutting-down instance.
+		aws ec2 describe-instances --filters Name=instance-state-name,Values=running,shutting-down,pending Name=instance-id,Values=!INSTANCEID! --output=text --query Reservations[*].Instances[*].InstanceId > output.txt
+		SET OUTPUT=EMPTY
+		SET /P OUTPUT=<output.txt
+		IF NOT [!OUTPUT!] == [EMPTY] (
+			REM Instance ist still running. Complain to user and exit.
+			ECHO Es läuft bereits eine %APP_NAME% Server Instanz!
+			ECHO Start einer neuen Instanz wird abgebrochen.
+			ECHO Bitte erst die alte Instanz beenden.
+			PAUSE
+			EXIT /b 1
+		)
+    )
 )
 
 REM Check for running instance by searching for tag in aws cloud.
@@ -49,9 +63,10 @@ IF EXIST %INSTIDFILE% (
 REM Launch Amazon Linux Instance. Run prepare_server.sh on server.
 ECHO Starte AWS EC2 Instanz.
 aws ec2 run-instances --image-id %IMAGEID% --instance-type %INSTANCETYPE% --key-name %KEYPAIR% --security-group-ids %SECURITYGROUPSID% --instance-initiated-shutdown-behavior terminate --region %REGION% --subnet-id %SUBNETID% --user-data file://prepare_server.sh --output text --query Instances[*].InstanceId > %INSTIDFILE%
+SET INSTANCEID=EMPTY
 SET /P INSTANCEID=<%INSTIDFILE%
 
-IF [%INSTANCEID%] == [] (
+IF [%INSTANCEID%] == [EMPTY] (
   DEL %INSTIDFILE%
   ECHO Start der Instanz gescheitert.
   EXIT /b 1
@@ -108,9 +123,10 @@ ECHO * Falls nicht bitte noch kurz warten.      *
 ECHO ********************************************
 ECHO .
 
-ECHO Am Besten dieses Fenster erst schließen, wenn ihr fertig mit %APP_NAME% spielen seid.
-ECHO Also erst später auf die Taste drücken!!
-PAUSE
-
 REM Restore previous current directory.
 CD /D %EXCURRENTDIR%
+
+ECHO Am Besten dieses Fenster erst schließen, wenn ihr fertig mit %APP_NAME% spielen seid.
+ECHO Also erst später auf die Taste drücken!!
+
+PAUSE

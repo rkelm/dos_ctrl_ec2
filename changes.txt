@@ -1,0 +1,12 @@
+v1.1
+Fixed Bug "New instance will not start after previous instance was terminated from a different client".
+Fixed a few spelling bugs in readme.md.
+
+Added changes.txt to track changes.
+Updated build_package.bat to include changes.txt in package.
+
+Added ec2_create_snap.bat batch file for creating a new snapshot of an EBS volume.
+Added ec2:CreateSnapshot to Apprunner_policy.json.
+Updated readme.md with explanation about creating snapshots.
+Updated build_package.bat to include ec2_create_snap.bat in package.
+

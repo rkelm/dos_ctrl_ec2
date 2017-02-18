@@ -33,7 +33,6 @@ REM Delete instance id file if it is empty.
 FOR %%F IN ("%INSTIDFILE%") DO IF %%~zF equ 0 DEL "%%F"
 IF NOT EXIST %INSTIDFILE% (
 	ECHO Es läuft keine %APP_NAME% Instanz, die beendet werden könnte.
-	PAUSE
 	EXIT /B 1
 )
 
@@ -53,7 +52,7 @@ IF NOT ERRORLEVEL 1 (
 	ECHO Die Instanz ist terminiert.
 	REM Send notice about terminated instance.
 	IF NOT [%SNS_TOPIC_ARN%] == [] (
-		aws sns publish --topic-arn "%SNS_TOPIC_ARN%" --subject "Minecraft Server mit Instanz ID %INSTANCEID% beendet" --message "Minecraft Server beendet, Instanz ID %INSTANCEID%." --output text > messageid.txt
+		aws sns publish --topic-arn "%SNS_TOPIC_ARN%" --subject "BEENDE %APP_NAME% Server mit Instanz ID %INSTANCEID%" --message "Beende %APP_NAME% Server, Instanz ID %INSTANCEID%." --output text > messageid.txt
 	)
 )
 
@@ -68,8 +67,6 @@ IF [%1] == [] (
 	)
 	RENAME instanceid_%1.txt instanceid_bak_%1.txt
 )
-  
-PAUSE
 
 REM Restore previous current directory.
 CD /D %EXCURRENTDIR%

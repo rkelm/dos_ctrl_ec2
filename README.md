@@ -7,7 +7,7 @@ EC2 instances running other apps/services than minecraft.
 
 Please be warned that using AWS services incurs charges for you.
 
-Currently batch file output is in german.
+Currently batch file output is in german only.
 
 
 # features
@@ -16,11 +16,12 @@ Currently batch file output is in german.
 * simple start/stop with one click
 * allows only one running instance per configuration file
 * tested with amazon linux instances
+* allows sending commands to the instance
 
 # prerequisites
 * AWS cli installed
 * AWS login
-* AWS credentials written to environment variables "AWS_ACCESS_KEY_ID" and "AWS_SECRET_ACCESS_KEY" or a batch file which will set up both environment variables when run.
+* AWS credentials written to environment variables "AWS_ACCESS_KEY_ID" and "AWS_SECRET_ACCESS_KEY" or a batch file which will set up both environment variables when run. See AppRunner_policy.json for an example AWS IAM policy document.
 * prepared EBS volume containing the following
   * an installed version or installation files of the apps/services to be run on an EC2 instance
   * /start.sh script run as root, which installs and starts the apps/services
@@ -39,8 +40,9 @@ The following are the main files used in this project.
 * ec2_config_default.bat - This is the standard configuration used, when no configuration is passed as a parameter to the batch files. Better than to edit this file, is to copy it for each different EC2 instance to the subdirectory "config" as a template and then edit the copied config file.
 * ec2_launch.bat - Run this batch file with the _NAME_ of the config file as the only parameter. When the configuration file is correct, it will start the EC2 instance. If there already is an EC2 instance using the given tags, then no new instance will be started.
 * ec2_terminate.bat - Run this batch with the _NAME_ of the config file as the only parameter. When the configuration file is correct, it will terminate the running EC2 instance. If no EC2 instance using the configured tags is running, the batch will complain and exit.
-* ec2_create_snap.bat - Running this batch file with the _NAME_ of the config file as the only parameter will create a new snapshot of the configured volume. 
-* prepare_server.sh - This bash script is executed on the EC2 instance right after start up. It installs security patches, mounts the volume and runs "start.sh".
+* ec2_create_snap.bat - Running this batch file with the _NAME_ of the config file as the only parameter, will create a new snapshot of the configured volume. 
+* ec2_send_command.bat - Call this batch file with a command to be executed in the ec2 instance as the second paramter. First parameter identifies the configuration file to be used. The command is executed with root privileges on the ect instance.
+* prepare_server.sh - This bash script is executed on the EC2 instance right after start up via AWS user data. It installs security patches, mounts the volume and runs "start.sh".
 * setup_dns.bat - Optional example script to update dynDNS service. Update it to use your preferred dynDNS service. (I use the utility curl to update my no-ip dynDNS service.)
 * build_package.bat - Batch file to run, to create deployment package.
 * ToDo.txt - Scribble with some notes about what to implement next.
@@ -64,7 +66,6 @@ For each different EC2 instance you plan to launch, setup the following.
 * Setup a startup script named "start.sh" in the root directory of the volume. This script should setup and start the apps/services. Its executed as the linux root user.
 * Optionally setup a hostname with your preferred dynDNS service and edit "setup_dns.bat" to update it at instance launch.
 
-
 # usage
 * Run "ec2_launch.bat _NAME_" to launch an EC2 instance using the specified configuration.
 * Run "ec2_terminate.bat _NAME_" to terminate a running EC2 instance belonging to the specified configuration.
@@ -72,3 +73,6 @@ For each different EC2 instance you plan to launch, setup the following.
 
 # deinstallation
 Terminate all running EC2 instances, delete the installation directory including all contained files and if you like delete alle volumes and snapshots.
+
+# security
+To use SSM to send commands to the ec2 instance with ec2_send_command.bat you need to add extensive permissions, which may be misused. Especially permissions ssm:SendCommand and iam:PassRole are dangerous as they may allow to elevate privileges if the access keys is compromised. Read the AWS documentation to understand more about the dangers.

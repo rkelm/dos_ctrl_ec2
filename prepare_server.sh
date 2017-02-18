@@ -9,10 +9,10 @@ mnt_pt="/mnt/app"
 start_script="start.sh"
 
 # SSM Service installieren.
-# echo 'Installing AWS SSM Service.'
-# cd /tmp
-# curl https://amazon-ssm-eu-central-1.s3.amazonaws.com/latest/linux_amd64/amazon-ssm-agent.rpm -o amazon-ssm-agent.rpm
-# yum install -y amazon-ssm-agent.rpm
+echo 'Installing AWS SSM Service.'
+cd /tmp
+curl https://amazon-ssm-eu-central-1.s3.amazonaws.com/latest/linux_amd64/amazon-ssm-agent.rpm -o amazon-ssm-agent.rpm
+yum install -y amazon-ssm-agent.rpm
 
 # Install security updates.
 yum update -y

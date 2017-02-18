@@ -1,4 +1,4 @@
-@ECHO OFF
+@ECHO ON
 REM Batch file to launch ec2 instance.
 SETLOCAL enabledelayedexpansion
 
@@ -26,27 +26,6 @@ IF NOT EXIST %CONFIGFILE% (
 REM Load configuration variables.
 CALL %CONFIGFILE%
 
-REM Check: "Is last instance started from this client still running?"
-IF EXIST %INSTIDFILE% (
-	SET INSTANCEID=EMPTY
-	REM Load instance id from file.
-	SET /P INSTANCEID=<%INSTIDFILE%
-	IF NOT [%INSTANCEID%] == [EMPTY] (
-		REM Ask aws if this is a known running/pending/shutting-down instance.
-		aws ec2 describe-instances --filters Name=instance-state-name,Values=running,shutting-down,pending Name=instance-id,Values=%INSTANCEID% --output=text --query Reservations[*].Instances[*].InstanceId > output.txt
-		SET OUTPUT=EMPTY
-		SET /P OUTPUT=<output.txt
-		IF NOT [%OUTPUT%] == [EMPTY] (
-			REM Instance ist still running. Complain to user and exit.
-			ECHO Es läuft bereits eine %APP_NAME% Server Instanz!
-			ECHO Ein neuer Snapshot kann nur bei terminierter Instanz erstellt werden.
-			ECHO Bitte erst die alte Instanz beenden.
-			PAUSE
-			EXIT /b 1
-		)
-    )
-)
-
 REM Check for running instance by searching for tag in aws cloud.
 aws ec2 describe-instances --filters Name=instance-state-name,Values=running Name=tag:%TAGKEY%,Values=%TAGVALUE% --output=text --query Reservations[*].Instances[*].InstanceId > %INSTIDFILE%
 REM Delete instance id file if it is empty.
@@ -55,16 +34,18 @@ IF EXIST %INSTIDFILE% (
 	ECHO Es läuft bereits eine %APP_NAME% Server Instanz!
 	ECHO Ein neuer Snapshot kann nur bei terminierter Instanz erstellt werden.
 	ECHO Bitte erst die alte Instanz beenden.
-	PAUSE
 	EXIT /b 1
 )
 
 REM Create new snapshot.
-aws ec2 create-snapshot --volume-id %VOLUMEID% --description "%1 Snapshot created %DATE% %TIME%." --output text --query VolumeSize > output.txt
+aws ec2 create-snapshot --volume-id %VOLUMEID% --description "%1 %APP_NAME% Snapshot created %DATE% %TIME%." --output text --query VolumeSize > output.txt
 
 IF NOT ERRORLEVEL 1 (
 	SET VOLUMESIZE=EMPTY
 	SET /P VOLUMESIZE=<output.txt
 	ECHO Snapshot erstellt, Größe !VOLUMESIZE! GByte.
 )
-PAUSE
+
+REM Restore previous current directory.
+CD /D %EXCURRENTDIR%
+

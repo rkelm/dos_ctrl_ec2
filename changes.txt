@@ -1,3 +1,13 @@
+2017-02-18 
+v1.1.1
+Updated AppRunner_policy.json to allow all SSM Commands.
+Added setup_dns_goip.bat batch file example to update DynDNS service goip.de.
+Renamed setup_dns.bat to setup_dns_noip.bat. This batch file is an example on how to update DynDNS service no-ip.com.
+Config Parameters SUBNETID and SECURITYGROUPSID are now optional.
+Changed subject and text of SNS start and termination message.
+Removed all PAUSE commands in ec2_launch.bat, ec2_terminate.bat and ec2_create_snap.bat.
+Added security notice to readme.md.
+
 v1.1
 Fixed Bug "New instance will not start after previous instance was terminated from a different client".
 Fixed a few spelling bugs in readme.md.

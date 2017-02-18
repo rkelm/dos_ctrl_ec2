@@ -1,10 +1,2 @@
-* Send termination mail only when instance has ben successfully terminated, e.g. running before termination.
-
-* Is app shutdown executed safely at ec2 instance termination?
-	* Add logging to app init-script to check. Is everything saved correctly? (Create log file with service script output (starting, stopping,...))
-* Create send-any-command batch file. Show command output to batch file user.
-	* Use aws ssm?
-	* Can this be done easily at all?
-* Add batch file with save/backup command. Add to app service script.
-* Create volume-snapshot-creation batch file.
 * More error checking at instance termination cli calls.
+* Make config entry for AMI image id optional. Automatically choose most current AMI image.

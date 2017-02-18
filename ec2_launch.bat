@@ -42,7 +42,6 @@ IF EXIST %INSTIDFILE% (
 			ECHO Es läuft bereits eine %APP_NAME% Server Instanz!
 			ECHO Start einer neuen Instanz wird abgebrochen.
 			ECHO Bitte erst die alte Instanz beenden.
-			PAUSE
 			EXIT /b 1
 		)
     )
@@ -56,20 +55,27 @@ IF EXIST %INSTIDFILE% (
   ECHO Es läuft bereits eine %APP_NAME% Server Instanz!
   ECHO Start einer neuen Instanz wird abgebrochen.
   ECHO Bitte erst die alte Instanz beenden.
-  PAUSE
   EXIT /b 1
-  )
+)
+
+REM Prepare optional run-instances parameters.
+IF NOT [%SECURITYGROUPSID%] == [] SET SECURITYGROUPSID_PARAM=--security-group-ids %SECURITYGROUPSID%
+IF NOT [%SUBNETID%] == [] SET SUBNETID_PARAM=--subnet-id %SUBNETID%
+IF NOT [%KEYPAIR%] == [] SET KEYPAIR_PARAM=--key-name %KEYPAIR%
+IF NOT [%SSM_ROLE_NAME%] == [] (
+	SET SSM_ROLE_NAME_PARAM=--iam-instance-profile Name=%SSM_ROLE_NAME%
+)
 
 REM Launch Amazon Linux Instance. Run prepare_server.sh on server.
 ECHO Starte AWS EC2 Instanz.
-aws ec2 run-instances --image-id %IMAGEID% --instance-type %INSTANCETYPE% --key-name %KEYPAIR% --security-group-ids %SECURITYGROUPSID% --instance-initiated-shutdown-behavior terminate --region %REGION% --subnet-id %SUBNETID% --user-data file://prepare_server.sh --output text --query Instances[*].InstanceId > %INSTIDFILE%
+aws ec2 run-instances --image-id %IMAGEID% --instance-type %INSTANCETYPE% %KEYPAIR_PARAM% %SECURITYGROUPSID_PARAM% --instance-initiated-shutdown-behavior terminate --region %REGION% %SUBNETID_PARAM% %SSM_ROLE_NAME_PARAM% --user-data file://prepare_server.sh --output text --query Instances[*].InstanceId > %INSTIDFILE%
 SET INSTANCEID=EMPTY
 SET /P INSTANCEID=<%INSTIDFILE%
 
 IF [%INSTANCEID%] == [EMPTY] (
-  DEL %INSTIDFILE%
-  ECHO Start der Instanz gescheitert.
-  EXIT /b 1
+	DEL %INSTIDFILE%
+	ECHO Start der Instanz gescheitert.
+	EXIT /b 1
 )
 
 ECHO AWS EC2 Instanz startet. (Instance ID %INSTANCEID%)
@@ -77,7 +83,7 @@ ECHO %DATE% %TIME% AWS EC2 Instanz startet. (Instance ID %INSTANCEID%) >> dos_ct
 
 REM Send notice about starting instance.
 IF NOT [%SNS_TOPIC_ARN%] == [] (
-  aws sns publish --topic-arn "%SNS_TOPIC_ARN%" --subject "%APP_NAME% Server mit Instanz ID %INSTANCEID% startet" --message "%APP_NAME% Server startet, Instanz ID %INSTANCEID%." --output text > messageid.txt
+	aws sns publish --topic-arn "%SNS_TOPIC_ARN%" --subject "STARTE %APP_NAME% Server mit Instanz ID %INSTANCEID%" --message "Starte %APP_NAME% Server, Instanz ID %INSTANCEID%." --output text > messageid.txt
 )
   
 ECHO Warte auf Abschluss des Instanzstarts ...
@@ -92,6 +98,8 @@ REM Get ip address.
 ECHO Frage Verbindungsdaten ab.
 aws ec2 describe-instances --instance-ids %INSTANCEID% --output text --query Reservations[*].Instances[*].PublicIpAddress > ipaddress.txt
 SET /P IPADDRESS=<ipaddress.txt
+
+ECHO Die IP-Adresse der Instanz ist %IPADDRESS%
 
 REM Call batch file to update DNS, if configured.
 IF EXIST %DNSSETUPBATCH% (
@@ -109,24 +117,9 @@ IF ERRORLEVEL 1 (
 	EXIT /b 1
 	)
 
-ECHO IP-Adresse %IPADDRESS%
-ECHO Bitte warten. Gleich ist der Server erreichbar.
 IF NOT [%CONNECTION_DATA%] == [] (
 	ECHO Verbindungsdaten: %CONNECTION_DATA%
 )
 
-TIMEOUT /T 60 /NOBREAK
-ECHO .
-ECHO ********************************************
-ECHO * Der Server sollte jetzt erreichbar sein. *
-ECHO * Falls nicht bitte noch kurz warten.      *
-ECHO ********************************************
-ECHO .
-
 REM Restore previous current directory.
 CD /D %EXCURRENTDIR%
-
-ECHO Am Besten dieses Fenster erst schließen, wenn ihr fertig mit %APP_NAME% spielen seid.
-ECHO Also erst später auf die Taste drücken!!
-
-PAUSE

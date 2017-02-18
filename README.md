@@ -70,9 +70,10 @@ For each different EC2 instance you plan to launch, setup the following.
 * Run "ec2_launch.bat _NAME_" to launch an EC2 instance using the specified configuration.
 * Run "ec2_terminate.bat _NAME_" to terminate a running EC2 instance belonging to the specified configuration.
 * Run "ec2_create_snap.bat _NAME_" to create a snapshot of the volume of a terminated EC2 instance belonging to the specified configuration.
+* Run "ec2_send_command.bat _NAME_ _REMOTE-COMMAND_" to run _REMOTE-COMMAND_ on the EC2 instance.
 
 # deinstallation
 Terminate all running EC2 instances, delete the installation directory including all contained files and if you like delete alle volumes and snapshots.
 
 # security
-To use SSM to send commands to the ec2 instance with ec2_send_command.bat you need to add extensive permissions, which may be misused. Especially permissions ssm:SendCommand and iam:PassRole are dangerous as they may allow to elevate privileges if the access keys is compromised. Read the AWS documentation to understand more about the dangers.
+To use SSM to send commands to the ec2 instance with ec2_send_command.bat you need to add extensive permissions, which may be misused. Especially permissions ssm:SendCommand and iam:PassRole are dangerous as they may allow to elevate privileges if the access key is compromised. Read the AWS documentation to understand more about the dangers.

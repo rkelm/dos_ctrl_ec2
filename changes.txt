@@ -1,3 +1,10 @@
+2017-02-18
+v1.2
+Fixed version to new minor version.
+Fixed typo in readme.md.
+Fixed missing ec2_send_command.bat in build_package.bat.
+Updated usage information in readme.md to include ec2_send_command.bat usage.
+
 2017-02-18 
 v1.1.1
 Updated AppRunner_policy.json to allow all SSM Commands.

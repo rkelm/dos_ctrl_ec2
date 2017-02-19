@@ -16,7 +16,7 @@
 		"Effect": "Allow",
 		"Resource": [
 			 "arn:aws:ec2:*:*:instance/*",
-			 "arn:aws:ssm:*:*:document/RestartLinuxService"
+			 "arn:aws:ssm:*:*:document/AWS-RunShellScript"
 		]
    },
    {

@@ -67,7 +67,7 @@ IF NOT [%SSM_ROLE_NAME%] == [] (
 )
 
 REM Launch Amazon Linux Instance. Run prepare_server.sh on server.
-ECHO Starte AWS EC2 Instanz.
+ECHO Starte AWS EC2 Instanz für %APP_NAME%.
 aws ec2 run-instances --image-id %IMAGEID% --instance-type %INSTANCETYPE% %KEYPAIR_PARAM% %SECURITYGROUPSID_PARAM% --instance-initiated-shutdown-behavior terminate --region %REGION% %SUBNETID_PARAM% %SSM_ROLE_NAME_PARAM% --user-data file://prepare_server.sh --output text --query Instances[*].InstanceId > %INSTIDFILE%
 SET INSTANCEID=EMPTY
 SET /P INSTANCEID=<%INSTIDFILE%

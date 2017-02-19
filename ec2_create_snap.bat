@@ -1,4 +1,4 @@
-@ECHO ON
+@ECHO OFF
 REM Batch file to launch ec2 instance.
 SETLOCAL enabledelayedexpansion
 
@@ -38,6 +38,7 @@ IF EXIST %INSTIDFILE% (
 )
 
 REM Create new snapshot.
+ECHO Erstelle neuen Snapshot des Volume mit ID %VOLUMEID% von %APP_NAME%.
 aws ec2 create-snapshot --volume-id %VOLUMEID% --description "%1 %APP_NAME% Snapshot created %DATE% %TIME%." --output text --query VolumeSize > output.txt
 
 IF NOT ERRORLEVEL 1 (

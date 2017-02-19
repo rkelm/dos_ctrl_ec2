@@ -1,3 +1,9 @@
+v1.2.1
+Fixed file name ec2_create_snap.bat in build_package.bat.
+Added ec2_send_command.bat to repo.
+Added output line to ec2_create_snap.bat.
+Replaced resource "RestartLinuxService" with "AWS-RunShellScript" in AppRunner_policy.json example.
+
 2017-02-18
 v1.2
 Fixed version to new minor version.

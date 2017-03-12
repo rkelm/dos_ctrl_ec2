@@ -21,7 +21,7 @@ yum update -y
 # yum install screen
 
 # Wait for EBS volume to be online.
-echo 'Waiting for EBS Volume /dev/vxdf to be online.'
+echo 'Waiting for EBS Volume /dev/xvdf or /dev/sdf to be online.'
 echo 'Checking for EBS volume ...'
 while [ ! -e /dev/xvdf -o ! -e /dev/sdf ] ; do
   sleep 5

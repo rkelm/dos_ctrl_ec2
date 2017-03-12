@@ -1,3 +1,11 @@
+v1.2.2
+Added check for missing authentication files in example dns setup files setup_dns_goip.bat and setup_dns_noip.bat.
+Updated build_package.bat to use build_file_list.txt list of files to include in deployment package.
+ec2_launch.bat: API call to tag instance is called right after instance start.
+ec2_create_snap.bat tags new snapshots with name of volume (default) or second command line parameter.
+Updated ec2_send_command.bat to accept more than 9 command line parameters.
+
+
 v1.2.1
 Fixed file name ec2_create_snap.bat in build_package.bat.
 Added ec2_send_command.bat to repo.

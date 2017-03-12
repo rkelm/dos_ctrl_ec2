@@ -1,0 +1,12 @@
+dos_ctrl_ec2\LICENSE
+dos_ctrl_ec2\README.md
+dos_ctrl_ec2\AppRunner_policy.json
+dos_ctrl_ec2\ec2_config_default.bat
+dos_ctrl_ec2\ec2_launch.bat
+dos_ctrl_ec2\ec2_terminate.bat
+dos_ctrl_ec2\prepare_server.sh
+dos_ctrl_ec2\setup_dns_noip.bat
+dos_ctrl_ec2\setup_dns_goip.bat
+dos_ctrl_ec2\ec2_create_snap.bat
+dos_ctrl_ec2\changes.txt
+dos_ctrl_ec2\ec2_send_command.bat

@@ -85,14 +85,15 @@ REM Send notice about starting instance.
 IF NOT [%SNS_TOPIC_ARN%] == [] (
 	aws sns publish --topic-arn "%SNS_TOPIC_ARN%" --subject "STARTE %APP_NAME% Server mit Instanz ID %INSTANCEID%" --message "Starte %APP_NAME% Server, Instanz ID %INSTANCEID%." --output text > messageid.txt
 )
-  
+ 
+REM Tag Instance for easy identification by 
+REM other clients without knowledge of instance id.
+aws ec2 create-tags --resources %INSTANCEID% --tags Key=%TAGKEY%,Value=%TAGVALUE%
+ 
 ECHO Warte auf Abschluss des Instanzstarts ...
 aws ec2 wait instance-running --instance-ids %INSTANCEID%
 aws ec2 wait instance-running --instance-ids %INSTANCEID%
 
-REM Tag Instance for easy identification by 
-REM other clients without knowledge of instance id.
-aws ec2 create-tags --resources %INSTANCEID% --tags Key=%TAGKEY%,Value=%TAGVALUE%
 
 REM Get ip address.
 ECHO Frage Verbindungsdaten ab.

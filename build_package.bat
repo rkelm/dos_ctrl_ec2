@@ -1,9 +1,31 @@
 @ECHO OFF
 REM Batch file to create package for distribution to users.
+SET LOCAL_DIR=dos_ctrl_ec2\
 SET DSTFILENAME=build\dos_ctrl_ec2.zip
+
+REM Remember previous current directory.
+SET EXCURRENTDIR=%CD%
+REM Switch current directory to installation directory.
+CD /D %~dp0
+
+REM Remove old package if it exists.
 IF EXIST %DSTFILENAME% (
 	DEL %DSTFILENAME%
 ) 
-C:\Programme\7-Zip\7z.exe a %DSTFILENAME% AppRunner_policy.json ec2_config_default.bat ec2_launch.bat ec2_terminate.bat LICENSE prepare_server.sh README.md setup_dns_noip.bat setup_dns_goip.bat ec2_create_snap.bat changes.txt ec2_send_command.bat
+REM Move up one directory level.
+CD ..
 
-pause
+ECHO Creating deployment package %DSTFILENAME%
+C:\Programme\7-Zip\7z.exe a %LOCAL_DIR%%DSTFILENAME% @%LOCAL_DIR%build_file_list.txt
+
+IF ERRORLEVEL 1 (
+	ECHO Error creating deployment package.
+	) ELSE (
+	ECHO Successfully created deployment package.
+	)
+	
+REM Restore previous current directory.
+CD /D %EXCURRENTDIR%
+
+PAUSE
+

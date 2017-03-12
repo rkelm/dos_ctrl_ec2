@@ -1,2 +1,9 @@
-* More error checking at instance termination cli calls.
+* Terminate instance if attaching of volume fails.
+* Query and show total number of running EC2 instances in launch and terminate BAT files. To ensure overvoiew of total costs. Create STATUS BAT file to show if instance is running?
 * Make config entry for AMI image id optional. Automatically choose most current AMI image.
+* Remove references to default config.
+* Add optional comment in ec2_create_snap.bat
+* New batch file to optionally create volume from snapshot before calling launch. Use youngest tagged snapshot? In that case the volume id is not configured and volume could bei identified by tag and date/time?
+* Take snapshot and delete volume after termination.
+* More error checking at instance termination cli calls.
+* Save host ssh key for later ssh connection validation.

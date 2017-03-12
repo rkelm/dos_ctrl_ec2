@@ -2,53 +2,61 @@
 REM Batch file to launch ec2 instance.
 SETLOCAL enabledelayedexpansion
 
+SET _CONFIG=%1
+IF NOT DEFINED _CONFIG (
+  ECHO Es muss eine Konfiguration angegeben werden.
+  EXIT /B 1
+)
+
 REM Check command line paramters.
-IF [%2] == [] (
+SET _APP_CMD=%2
+IF NOT DEFINED _APP_CMD (
 	REM Complain about missing parameter.
 	ECHO Bitte geben sie ein Kommando als zweiten Parameter an.
 	EXIT /B 1
 )
-
-SET SERVER_COMMAND=%2 %3 %4 %5 %6 %7 %8 %9
-
 REM Remember previous current directory.
 SET EXCURRENTDIR=%CD%
 
 REM Switch current directory to installation directory.
 CD /D %~dp0
-
-REM Check if the default config file and instanceid.txt should be used.
-IF [%1] == [] (
-	SET CONFIGFILE=ec2_config_default.bat
-    SET INSTIDFILE=instanceid.txt
-) ELSE (
-	SET CONFIGFILE=config\ec2_config_%1.bat
-    SET INSTIDFILE=instanceid_%1.txt
+REM Prepare server command.
+SET _I=0
+FOR %%A IN ( %* ) DO (
+	REM We dont need the first and second command.
+	SET /A _I=!_I! + 1
+    IF !_I! GEQ 2 (
+		SET _SERVER_COMMAND=!_SERVER_COMMAND! %%A
+	)
 )
 
+REM Load config.
+SET _CONFIGFILE=config\ec2_config_%_CONFIG%.bat
+SET _INSTIDFILE=instanceid_%_CONFIG%.txt
+
 REM Check if config file exists. If not complain.
-IF NOT EXIST %CONFIGFILE% (
-	ECHO Konfigurationsdatei %CONFIGFILE% nicht gefunden.
+IF NOT EXIST %_CONFIGFILE% (
+	ECHO Konfigurationsdatei %_CONFIGFILE% nicht gefunden.
 	EXIT /B 1
 	)
-	
+
 REM Load configuration variables.
-CALL %CONFIGFILE%
+CALL %_CONFIGFILE%
 
 REM Check for running instance by searching for tag in aws cloud.
-aws ec2 describe-instances --filters Name=instance-state-name,Values=running Name=tag:%TAGKEY%,Values=%TAGVALUE% --output=text --query Reservations[*].Instances[*].InstanceId > %INSTIDFILE%
+aws ec2 describe-instances --filters Name=instance-state-name,Values=running Name=tag:%TAGKEY%,Values=%TAGVALUE% --output=text --query Reservations[*].Instances[*].InstanceId > %_INSTIDFILE%
 REM Delete instance id file if it is empty.
-for %%F in ("%INSTIDFILE%") do if %%~zF equ 0 del "%%F"
-IF NOT EXIST %INSTIDFILE% (
+for %%F in ("%_INSTIDFILE%") do if %%~zF equ 0 del "%%F"
+IF NOT EXIST %_INSTIDFILE% (
   ECHO Es läuft keine %APP_NAME% Server Instanz!
   ECHO Kommando kann nicht ausgeführt werden.
   ECHO Bitte erst eine Instanz starten.
   EXIT /b 1
 )
-SET /P INSTANCEID=<%INSTIDFILE%
+SET /P _INSTANCEID=<%_INSTIDFILE%
 
 REM Send command.
-aws ssm send-command --instance-ids %INSTANCEID% --document-name "AWS-RunShellScript" --parameters commands="%SERVER_COMMAND%" --output text --query Command.CommandId > commandid.txt
+aws ssm send-command --instance-ids %_INSTANCEID% --document-name "AWS-RunShellScript" --parameters commands="%_SERVER_COMMAND%" --output text --query Command.CommandId > commandid.txt
 SET /P COMMANDID=<commandid.txt
 
 REM Wait till command execution terminates.

@@ -8,14 +8,13 @@ SET EXCURRENTDIR=%CD%
 REM Switch current directory to installation directory.
 CD /D %~dp0
 
-REM Check if the default config file and instanceid.txt should be used.
-IF [%1] == [] (
-	SET CONFIGFILE=ec2_config_default.bat
-    SET INSTIDFILE=instanceid.txt
-) ELSE (
-	SET CONFIGFILE=config\ec2_config_%1.bat
-    SET INSTIDFILE=instanceid_%1.txt
+SET _CONFIG=%1
+IF NOT DEFINED _CONFIG (
+  ECHO Es muss ein Konfigurationskuerzel als Paramter angegeben werden.
+  EXIT /B 1
 )
+SET CONFIGFILE=config\ec2_config_%_CONFIG%.bat
+SET INSTIDFILE=instanceid_%_CONFIG%.txt
 
 REM Check if config file exists. If not complain.
 IF NOT EXIST %CONFIGFILE% (
@@ -39,7 +38,7 @@ IF EXIST %INSTIDFILE% (
 		SET /P OUTPUT=<output.txt
 		IF NOT [!OUTPUT!] == [EMPTY] (
 			REM Instance ist still running. Complain to user and exit.
-			ECHO Es läuft bereits eine %APP_NAME% Server Instanz!
+			ECHO Es laeuft bereits eine %APP_NAME% Server Instanz!
 			ECHO Start einer neuen Instanz wird abgebrochen.
 			ECHO Bitte erst die alte Instanz beenden.
 			EXIT /b 1
@@ -52,7 +51,7 @@ aws ec2 describe-instances --filters Name=instance-state-name,Values=running Nam
 REM Delete instance id file if it is empty.
 for %%F in ("%INSTIDFILE%") do if %%~zF equ 0 del "%%F"
 IF EXIST %INSTIDFILE% (
-  ECHO Es läuft bereits eine %APP_NAME% Server Instanz!
+  ECHO Es laeuft bereits eine %APP_NAME% Server Instanz!
   ECHO Start einer neuen Instanz wird abgebrochen.
   ECHO Bitte erst die alte Instanz beenden.
   EXIT /b 1
@@ -65,9 +64,29 @@ IF NOT [%KEYPAIR%] == [] SET KEYPAIR_PARAM=--key-name %KEYPAIR%
 IF NOT [%SSM_ROLE_NAME%] == [] (
 	SET SSM_ROLE_NAME_PARAM=--iam-instance-profile Name=%SSM_ROLE_NAME%
 )
+IF [%IMAGEID%] == [] (
+	REM If no ami image id configured, then choose most current available public amazon
+	REM linux ami for x86_64 architecture and ebs in chosen aws region. Avoid release
+	REM candidate versions.
+	ECHO Kein ami Image konfiguriert, suche aktuellstes Image.
+    aws ec2 describe-images --region %REGION% --filters Name=root-device-type,Values=ebs Name=architecture,Values=x86_64 Name=virtualization-type,Values=hvm Name=name,Values=amzn-ami-hvm-2*gp2 Name=state,Values=available  --owners amazon --query "Images[?^!contains(Name, '.rc-')]|sort_by(@, &CreationDate)[-1].[ImageId]" --output text > ami_image_id.txt
+
+	SET /P IMAGEID=<ami_image_id.txt
+)
+
+REM Exit if image id is invalid.
+IF [%IMAGEID%] == [] (
+	ECHO Kein gueltiges ami Image gefunden. 
+	ECHO Start einer neuen Instanz wird abgebrochen.
+	EXIT /b 1
+)
+
+REM Show image details.
+ECHO Details des ami Images mit der image-id %IMAGEID%:
+aws ec2 describe-images --region %REGION% --image-id %IMAGEID% --query "Images[].[ImageId, Name, CreationDate, RootDeviceName]" --output text
 
 REM Launch Amazon Linux Instance. Run prepare_server.sh on server.
-ECHO Starte AWS EC2 Instanz für %APP_NAME%.
+ECHO Starte AWS EC2 Instanz fuer %APP_NAME%.
 aws ec2 run-instances --image-id %IMAGEID% --instance-type %INSTANCETYPE% %KEYPAIR_PARAM% %SECURITYGROUPSID_PARAM% --instance-initiated-shutdown-behavior terminate --region %REGION% %SUBNETID_PARAM% %SSM_ROLE_NAME_PARAM% --user-data file://prepare_server.sh --output text --query Instances[*].InstanceId > %INSTIDFILE%
 SET INSTANCEID=EMPTY
 SET /P INSTANCEID=<%INSTIDFILE%
@@ -106,6 +125,7 @@ REM Call batch file to update DNS, if configured.
 IF EXIST %DNSSETUPBATCH% (
 	ECHO Aktualisiere DNS %DNSHOSTNAME% auf IP %IPADDRESS%.
 	CALL %DNSSETUPBATCH% %DNSHOSTNAME% %IPADDRESS% >> dos_ctrl_ec2.log
+	IF ERRORLEVEL 1 ECHO Fehler beim Aktualisieren des DNS. Siehe Logdatei dos_ctrl_ec2.log.
 )
 
 ECHO Instanz erfolgreich gestartet, verbinde mit EBS Laufwerk.

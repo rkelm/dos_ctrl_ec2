@@ -1,3 +1,15 @@
+
+Made entry IMAGEID optional. If not set, image-id will be selected automatically.
+Added check for curl.exe to setup_goip.bat and setup_dns_noip.bat examples.
+Added parameter check to setup_goip.bat and setup_dns_noip.bat examples.
+Added errorlevel check after call to dns Update batch in ec2_launch.bat
+Replaces german umlaute in message output.
+Replaced call to default config, when config parameter missing by an error message.
+Removed id in AppRunner_policy.json for "IamPassRole".
+Removed Action "ec2:wait" in Apprunnder_policy.json. There is no such aws ec2 action.
+Added mounting of logical partition on app volume in prepare_server.sh.
+Added logging to /var/log/user-data.log in prepare_server.sh.
+
 v1.2.2
 Added check for missing authentication files in example dns setup files setup_dns_goip.bat and setup_dns_noip.bat.
 Updated build_package.bat to use build_file_list.txt list of files to include in deployment package.

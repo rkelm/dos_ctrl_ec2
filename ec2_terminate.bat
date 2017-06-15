@@ -8,14 +8,13 @@ SET EXCURRENTDIR=%CD%
 REM Switch current directory to installation directory.
 CD /D %~dp0
 
-REM Check if the default config file and instanceid.txt should be used.
-IF [%1] == [] (
-	SET CONFIGFILE=ec2_config_default.bat
-    SET INSTIDFILE=instanceid.txt
-) ELSE (
-	SET CONFIGFILE=config\ec2_config_%1.bat
-    SET INSTIDFILE=instanceid_%1.txt
+SET _CONFIG=%1
+IF NOT DEFINED _CONFIG (
+  ECHO Es muss ein Konfigurationskuerzel als Parameter angegeben werden.
+  EXIT /B 1
 )
+SET CONFIGFILE=config\ec2_config_%_CONFIG%.bat
+SET INSTIDFILE=instanceid_%CONFIG%.txt
 
 REM Check if config file exists. If not complain.
 IF NOT EXIST %CONFIGFILE% (
@@ -32,7 +31,7 @@ aws ec2 describe-instances --filters Name=instance-state-name,Values=running Nam
 REM Delete instance id file if it is empty.
 FOR %%F IN ("%INSTIDFILE%") DO IF %%~zF equ 0 DEL "%%F"
 IF NOT EXIST %INSTIDFILE% (
-	ECHO Es läuft keine %APP_NAME% Instanz, die beendet werden könnte.
+	ECHO Es laeuft keine %APP_NAME% Instanz, die beendet werden koennte.
 	EXIT /B 1
 )
 

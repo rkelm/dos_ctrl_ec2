@@ -4,7 +4,7 @@ SETLOCAL enabledelayedexpansion
 
 SET _CONFIG=%1
 IF NOT DEFINED _CONFIG (
-  ECHO Es muss eine Konfiguration angegeben werden.
+  ECHO Es muss ein Konfigurationskuerzel als Parameter angegeben werden.
   EXIT /B 1
 )
 
@@ -48,8 +48,8 @@ aws ec2 describe-instances --filters Name=instance-state-name,Values=running Nam
 REM Delete instance id file if it is empty.
 for %%F in ("%_INSTIDFILE%") do if %%~zF equ 0 del "%%F"
 IF NOT EXIST %_INSTIDFILE% (
-  ECHO Es läuft keine %APP_NAME% Server Instanz!
-  ECHO Kommando kann nicht ausgeführt werden.
+  ECHO Es laeuft keine %APP_NAME% Server Instanz!
+  ECHO Kommando kann nicht ausgefuehrt werden.
   ECHO Bitte erst eine Instanz starten.
   EXIT /b 1
 )

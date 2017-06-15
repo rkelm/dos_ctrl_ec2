@@ -23,9 +23,10 @@ SET SECURITYGROUPSID=
 REM Choose instance type. Typical instance types are c4.large, t2.medium, t2.small, t2.micro. (Required)
 SET INSTANCETYPE=t2.small
 
-REM Set Image ID for root device of instance. (Required)
-REM Example: SET IMAGEID=ami-ea26ce85
-SET IMAGEID=ami-f9619996
+REM Set Image ID for root device of instance. (Optional)
+REM If left blank, the most current amazon linux AMI will be chosen. 
+REM Example: SET IMAGEID=ami-f9619996
+SET IMAGEID=
 
 REM Set SNS topic arn if you would like to receive a notice by AWS SNS Service, at start
 REM and termination of instance. (Optional)
@@ -36,6 +37,7 @@ REM Example: KEYPAIR=Power_User
 SET KEYPAIR=Power_User
 
 REM Tags for other clients to discover a running instance. (Required)
+REM Must be unique to safely identify the running instance!
 SET TAGKEY=APP-SERVER
 SET TAGVALUE=VANILLA
 

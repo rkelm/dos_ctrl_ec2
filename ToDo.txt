@@ -1,9 +1,3 @@
-
-* setup new EBS volume
-	* start.sh	
-	* directory tree
-	* create snapshot with script
-
 * Make VolumeId optional.
 * Create volume from snapshot, configure snapshot ID.
 * Terminate instance if attaching of volume fails.

@@ -1,13 +1,15 @@
 * Make VolumeId optional.
-* Create volume from snapshot, configure snapshot ID.
-* Terminate instance if attaching of volume fails.
+	- Create volume from configured snapshot, while instance starts.
 * Optionally delete created volume after termination, if created by snapshot.
-* New batch file to optionally create volume from snapshot before calling launch. Use youngest tagged snapshot? In that case the volume id is not configured and volume could bei identified by tag and date/time?
+	- Optionally create snapshot before deleting volume.
+		- Zero volume with "zerofree" before taking a snapshot.
 
-* Umgebungsvariablen an start.sh übergeben.
+* Terminate instance if attaching of volume fails.
+* ec2_create_snap set optional comment tag.
 
+* Pass environment variables to start.sh.
+
+* Give feedback to user when prepare_server.sh/start.sh is done.
 * Query and show total number of running EC2 instances in launch and terminate BAT files. To ensure overview of total costs. Create STATUS BAT file to show if instance is running?
-* Add optional comment in ec2_create_snap.bat
-* Take snapshot and delete volume after termination.
 * More error checking at instance termination cli calls.
 * Show and save host ssh key for later ssh connection validation.

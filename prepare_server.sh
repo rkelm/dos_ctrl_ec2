@@ -18,7 +18,8 @@ curl https://amazon-ssm-eu-central-1.s3.amazonaws.com/latest/linux_amd64/amazon-
 yum -y install amazon-ssm-agent.rpm
 
 # Install security updates.
-yum -y update security
+# Automatically installed before instance start.
+# yum -y update --security
 
 # screen is usually installed.
 # yum install screen

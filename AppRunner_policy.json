@@ -51,32 +51,32 @@
             "Effect": "Allow",
             "Action": "iam:PassRole",
             "Resource": [
-                "arn:aws:iam:::role/SSM_Controlled_Instance"
+                "arn:aws:iam::#enter_your_aws_Account_id#:role/SSM_Controlled_Instance"
             ]
         },
         {
             "Effect": "Allow",
             "Action": "sns:Publish",
             "Resource": [
-                "arn:aws:sns:*::*"
+                "arn:aws:sns:#your_favorite_region#:*:Minecraft_Server"
             ]
         },
         {
             "Effect": "Allow",
             "Action": "ec2:RunInstances",
             "Resource": [
-                "arn:aws:ec2:*::network-interface/*",
-                "arn:aws:ec2:*::volume/*",
-                "arn:aws:ec2:*::key-pair/Power_User",
-                "arn:aws:ec2:*::security-group/*",
-                "arn:aws:ec2:*::subnet/*"
+                "arn:aws:ec2:#your_favorite_region#:*:network-interface/*",
+                "arn:aws:ec2:#your_favorite_region#:*:volume/*",
+                "arn:aws:ec2:#your_favorite_region#:*:key-pair/Power_User",
+                "arn:aws:ec2:#your_favorite_region#:*:security-group/*",
+                "arn:aws:ec2:#your_favorite_region#:*:subnet/*"
             ]
         },
         {
             "Effect": "Allow",
             "Action": "ec2:RunInstances",
             "Resource": [
-                "arn:aws:ec2:*::instance/*"
+                "arn:aws:ec2:#your_favorite_region#:#enter_your_aws_Account_id#:instance/*"
             ],
             "Condition": {
                 "StringEquals": {
@@ -93,7 +93,7 @@
             "Effect": "Allow",
             "Action": "ec2:RunInstances",
             "Resource": [
-                "arn:aws:ec2:*::image/ami-*"
+                "arn:aws:ec2:#your_favorite_region#::image/ami-*"
             ],
             "Condition": {
                 "StringEquals": {
@@ -107,7 +107,7 @@
                 "ec2:AttachVolume",
                 "ec2:DetachVolume"
             ],
-            "Resource": "arn:aws:ec2*::instance/*"
+            "Resource": "arn:aws:ec2:#your_favorite_region#:*:instance/*"
         },
         {
             "Effect": "Allow",
@@ -115,7 +115,7 @@
                 "ec2:AttachVolume",
                 "ec2:DetachVolume"
             ],
-            "Resource": "arn:aws:ec2:*::volume/*"
+            "Resource": "arn:aws:ec2:#your_favorite_region#:*:volume/*"
         }
     ]
 }

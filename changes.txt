@@ -1,4 +1,9 @@
+v1.3.1
+Removed check for security updates in prepare_server.sh, as this is done by ec2 services automatically before instance start.
+Corrected comment spelling mistake in ec2_launch.bat.
+Added place holder in Apprunner_policy.json to fill in region and account id.
 
+v1.3
 Made entry IMAGEID optional. If not set, image-id will be selected automatically.
 Added check for curl.exe to setup_goip.bat and setup_dns_noip.bat examples.
 Added parameter check to setup_goip.bat and setup_dns_noip.bat examples.

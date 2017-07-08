@@ -10,7 +10,7 @@ CD /D %~dp0
 
 SET _CONFIG=%1
 IF NOT DEFINED _CONFIG (
-  ECHO Es muss ein Konfigurationskuerzel als Paramter angegeben werden.
+  ECHO Es muss ein Konfigurationskuerzel als Parameter angegeben werden.
   EXIT /B 1
 )
 SET CONFIGFILE=config\ec2_config_%_CONFIG%.bat

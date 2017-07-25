@@ -22,6 +22,7 @@ REM Switch current directory to installation directory.
 CD /D %~dp0
 REM Prepare server command.
 SET _I=0
+SET _SERVER_COMMAND=
 FOR %%A IN ( %* ) DO (
 	REM We dont need the first and second command.
 	SET /A _I=!_I! + 1
@@ -56,7 +57,10 @@ IF NOT EXIST %_INSTIDFILE% (
 SET /P _INSTANCEID=<%_INSTIDFILE%
 
 REM Send command.
-aws ssm send-command --instance-ids %_INSTANCEID% --document-name "AWS-RunShellScript" --parameters commands="%_SERVER_COMMAND%" --output text --query Command.CommandId > commandid.txt
+REM aws ssm send-command --instance-ids %_INSTANCEID% --document-name "AWS-RunShellScript" --parameters commands="%_SERVER_COMMAND%" --output text --query Command.CommandId > commandid.txt
+
+aws ssm send-command --instance-ids %_INSTANCEID% --document-name "AWS-RunShellScript" --parameters "{\"commands\":[\"%_SERVER_COMMAND%\"]}" --query Command.CommandId > commandid.txt
+
 SET /P COMMANDID=<commandid.txt
 
 REM Wait till command execution terminates.
@@ -68,6 +72,9 @@ IF [%STATUS%]==[InProgress] (
 	GOTO CMD_EXECUTION
 )
 
+REM Restore previous current directory.
+CD /D %EXCURRENTDIR%
+
 IF [%STATUS%] == "Success" (
 	REM Get command output.
 	aws ssm list-command-invocations --command-id "%COMMANDID%" --detail --query CommandInvocations[*].CommandPlugins[*].Output --output text			
@@ -76,5 +83,3 @@ IF [%STATUS%] == "Success" (
 	EXIT /B 1
 )
 
-REM Restore previous current directory.
-CD /D %EXCURRENTDIR%

@@ -1,3 +1,8 @@
+v1.3.2
+Fixed bug in ec2_send_messages with missing variable initialization of _SERVER_COMMAND.
+Command is now sent in JSON format. It is now possible to use single quotes in commands.
+
+
 v1.3.1
 Removed check for security updates in prepare_server.sh, as this is done by ec2 services automatically before instance start.
 Corrected comment spelling mistake in ec2_launch.bat.

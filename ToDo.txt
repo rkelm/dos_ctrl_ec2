@@ -1,5 +1,6 @@
 * Make VolumeId optional.
 	- Create volume from configured snapshot, while instance starts.
+	- Find Volume/Snapshot by Tag (Name + Value)
 * Optionally delete created volume after termination, if created by snapshot.
 	- Optionally create snapshot before deleting volume.
 		- Zero volume with "zerofree" before taking a snapshot.

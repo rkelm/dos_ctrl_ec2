@@ -51,7 +51,7 @@ IF NOT ERRORLEVEL 1 (
 	ECHO Die Instanz ist terminiert.
 	REM Send notice about terminated instance.
 	IF NOT [%SNS_TOPIC_ARN%] == [] (
-		aws sns publish --topic-arn "%SNS_TOPIC_ARN%" --subject "BEENDE %APP_NAME% Server mit Instanz ID %INSTANCEID%" --message "Beende %APP_NAME% Server, Instanz ID %INSTANCEID%." --output text > messageid.txt
+		aws sns publish --topic-arn "%SNS_TOPIC_ARN%" --subject "BEENDE %APP_NAME% Server mit Instanz ID %INSTANCEID%" --message "Beende %APP_NAME% Server mit Instanz ID %INSTANCEID%. (%DATE% %TIME%)" --output text > messageid.txt
 	)
 )
 

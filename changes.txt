@@ -1,3 +1,7 @@
+v1.4
+Added ec2 instance type to launch console output in ec2_launch.bat.
+Added ec2 instance type to SNS message.
+
 v1.3.2
 Fixed bug in ec2_send_messages with missing variable initialization of _SERVER_COMMAND.
 Command is now sent in JSON format. It is now possible to use single quotes in commands.

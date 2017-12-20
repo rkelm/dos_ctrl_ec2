@@ -86,7 +86,7 @@ ECHO Details des ami Images mit der image-id %IMAGEID%:
 aws ec2 describe-images --region %REGION% --image-id %IMAGEID% --query "Images[].[ImageId, Name, CreationDate, RootDeviceName]" --output text
 
 REM Launch Amazon Linux Instance. Run prepare_server.sh on server.
-ECHO Starte AWS EC2 Instanz fuer %APP_NAME%.
+ECHO Starte AWS EC2 Instanztyp %INSTANCETYPE% fuer %APP_NAME%.
 aws ec2 run-instances --image-id %IMAGEID% --instance-type %INSTANCETYPE% %KEYPAIR_PARAM% %SECURITYGROUPSID_PARAM% --instance-initiated-shutdown-behavior terminate --region %REGION% %SUBNETID_PARAM% %SSM_ROLE_NAME_PARAM% --user-data file://prepare_server.sh --output text --query Instances[*].InstanceId > %INSTIDFILE%
 SET INSTANCEID=EMPTY
 SET /P INSTANCEID=<%INSTIDFILE%
@@ -102,9 +102,9 @@ ECHO %DATE% %TIME% AWS EC2 Instanz startet. (Instance ID %INSTANCEID%) >> dos_ct
 
 REM Send notice about starting instance.
 IF NOT [%SNS_TOPIC_ARN%] == [] (
-	aws sns publish --topic-arn "%SNS_TOPIC_ARN%" --subject "STARTE %APP_NAME% Server mit Instanz ID %INSTANCEID%" --message "Starte %APP_NAME% Server, Instanz ID %INSTANCEID%." --output text > messageid.txt
+	aws sns publish --topic-arn "%SNS_TOPIC_ARN%" --subject "STARTE %APP_NAME% Server auf ec2 Instanztyp %INSTANCETYPE%" --message "Starte %APP_NAME% Server auf %INSTANCETYPE% mit Instanz ID %INSTANCEID%. (%DATE% %TIME%)" --output text > messageid.txt
 )
- 
+
 REM Tag Instance for easy identification by 
 REM other clients without knowledge of instance id.
 aws ec2 create-tags --resources %INSTANCEID% --tags Key=%TAGKEY%,Value=%TAGVALUE%

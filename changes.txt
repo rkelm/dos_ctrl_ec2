@@ -1,3 +1,8 @@
+v1.5
+Volumes can now be selected by tags.
+Instead of a volume, a snapshot can be configured by snapshot id or tag. Then
+a "DeleteOnTermination" volume will be created from the snapshot and attached.
+
 v1.4
 Added ec2 instance type to launch console output in ec2_launch.bat.
 Added ec2 instance type to SNS message.

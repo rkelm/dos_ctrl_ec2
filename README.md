@@ -62,7 +62,8 @@ For each different EC2 instance you plan to launch, setup the following.
 * Create one config file in the "config" subdirectory by copying "\ec2_config_default.bat".
 * Config files must be named by the pattern "EC2_config_NAME.bat", where _NAME_ must not contain blanks and must be the unique name used to identify this instance configuration.
 * Edit the created config file to fit your needs.
-* Setup an EBS volume with the installation files or already installed files apps/services to run on EC2 instances.
+* Setup an EBS volume or EBS snapshot with the installation files or already installed files apps/services to run on EC2 instances.
+(When creating a snapshot, one can use "zerofree" app to reduce storage size.)
 * Setup a startup script named "start.sh" in the root directory of the volume. This script should setup and start the apps/services. Its executed as the linux root user.
 * Optionally setup a hostname with your preferred dynDNS service and edit "setup_dns.bat" to update it at instance launch.
 

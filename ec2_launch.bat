@@ -25,6 +25,13 @@ IF NOT EXIST %CONFIGFILE% (
 REM Load configuration variables.
 CALL %CONFIGFILE%
 
+IF NOT DEFINED VOLUMEID IF NOT DEFINED VOLUMETAGKEY IF NOT DEFINED SNAPSHOTID IF NOT DEFINED SNAPSHOTTAGKEY (
+	ECHO In der Konfiguration %_CONFIG% ist weder ein Volume noch ein Snapshot spezifziert.
+	ECHO Breche ab.
+	EXIT /B 1
+)
+
+
 REM Check: "Is the last from this client startet instance still running?"
 IF EXIST %INSTIDFILE% (
 	REM Load old instance id from file.
@@ -108,11 +115,61 @@ IF NOT [%SNS_TOPIC_ARN%] == [] (
 REM Tag Instance for easy identification by 
 REM other clients without knowledge of instance id.
 aws ec2 create-tags --resources %INSTANCEID% --tags Key=%TAGKEY%,Value=%TAGVALUE%
- 
+
+REM Prepare volume-id.
+IF DEFINED VOLUMEID (
+	SET _VOLUMEID=%VOLUMEID%
+) ELSE (
+	IF DEFINED VOLUMETAGKEY (
+		REM Find ebs volume by tag. 
+		aws ec2 describe-volumes --region %REGION% --filters Name=status,Values=available Name=tag:%VOLUMETAGKEY%,Values=%VOLUMETAGVALUE% --output=text --query Volumes[*].VolumeId > volumeid.txt
+        REM Delete volumeid file if it is empty.
+		for %%F in ("volumeid.txt") do if %%~zF equ 0 del "%%F"
+		IF NOT EXIST volumeid.txt (
+			ECHO Kein verfuegbares EBS Volume mit Tag-Name/Value: %VOLUMETAGKEY% / %VOLUMETAGVALUE% gefunden.
+			ECHO Der Start einer neuen Instanz wird abgebrochen.
+			EXIT /b 1
+		)
+		SET /P _VOLUMEID=<volumeid.txt
+	) ELSE  (
+	    REM Get snapshot id to create Volume from snapshot.
+		IF DEFINED SNAPSHOTID (
+			SET _SNAPSHOT=%SNAPSHOTID%
+		) ELSE (
+			REM Find snapshot by tag.
+			aws ec2 describe-snapshots --region %REGION% --filters Name=status,Values=completed Name=tag:%SNAPSHOTTAGKEY%,Values=%SNAPSHOTTAGVALUE% --output=text --query Snapshots[*].SnapshotId > snapshotid.txt
+			REM Delete snapshotid file if it is empty.
+			for %%F in ("snapshotid.txt") do if %%~zF equ 0 del "%%F"
+			IF NOT EXIST snapshotid.txt (
+				ECHO Kein EBS Snapshot mit Tag-Name/Value: %SNAPSHOTTAGKEY% / %SNAPSHOTTAGVALUE% gefunden.
+				ECHO Der Start einer neuen Instanz wird abgebrochen.
+				EXIT /b 1
+			)
+			SET /P _SNAPSHOTID=<snapshotid.txt
+		)
+        REM Create volume from snapshot.
+		REM Get availability zone of configured subnet.
+		aws ec2 describe-subnets --region %REGION% --filter Name=subnet-id,Values=%SUBNETID% --output text --query Subnets[*].AvailabilityZone > availabilityzone.txt
+		SET /P _AVAILABILITYZONE=<availabilityzone.txt
+		ECHO Erstelle EBS Volume in AvailabilityZone !_AVAILABILITYZONE! aus EBS Snapshot mit Id !_SNAPSHOTID!.
+		aws ec2 create-volume --region %REGION% --availability-zone !_AVAILABILITYZONE! --snapshot-id !_SNAPSHOTID! --volume-type gp2 --tag-specifications "ResourceType=volume,Tags=[{Key=Name,Value=TEMPORARY_%APP_NAME%}]" --query VolumeId --output text > volumeid.txt
+		SET /P _VOLUMEID=<volumeid.txt
+		REM Remember we created this volume.
+		SET _VOLUMECREATED=TRUE
+		ECHO Temporaeres Volume !_VOLUMEID! erstellt.
+		)
+)
+
 ECHO Warte auf Abschluss des Instanzstarts ...
 aws ec2 wait instance-running --instance-ids %INSTANCEID%
 aws ec2 wait instance-running --instance-ids %INSTANCEID%
 
+IF NOT DEFINED %_VOLUMEID (
+	ECHO Es konnte keine gueltige EBS VolumeId ermittelt werden.
+	ECHO Terminiere die gestartete Instanz.
+	CALL ec2_terminate.bat %_CONFIG%
+	EXIT /B 1
+)
 
 REM Get ip address.
 ECHO Frage Verbindungsdaten ab.
@@ -129,14 +186,23 @@ IF EXIST %DNSSETUPBATCH% (
 )
 
 ECHO Instanz erfolgreich gestartet, verbinde mit EBS Laufwerk.
-aws ec2 attach-volume --volume-id %VOLUMEID% --instance-id %INSTANCEID% --device /dev/sdf > attachvolume.json
+aws ec2 attach-volume --volume-id %_VOLUMEID% --instance-id %INSTANCEID% --device /dev/sdf > attachvolume.json
 
 IF ERRORLEVEL 1 (
-	ECHO Fehler beim Verbinden des %APP_NAME% Laufwerk-Volumes ID %VOLUMEID%
+	ECHO Fehler beim Verbinden der Instanz %_INSTANCEID% mit dem Laufwerk-Volume ID %_VOLUMEID%
 	ECHO Terminiere die gestartete Instanz.
-	CALL ec2_terminate_mc.bat
+	CALL ec2_terminate.bat %_CONFIG%
 	EXIT /b 1
 	)
+
+REM If this volume was created by this script, then it should be marked to be deleted at instance termination.
+IF "%_VOLUMECREATED%" == "TRUE" (
+	ECHO Markiere temporaeres Volume als "DeleteOnTermination".
+	aws ec2 modify-instance-attribute --instance-id %INSTANCEID% --block-device-mappings "[{\"DeviceName\": \"/dev/sdf\",\"Ebs\":{\"DeleteOnTermination\":true}}]"
+	IF ERRORLEVEL 1 (
+		ECHO Fehler beim Markieren des temporaeren Volumes "%_VOLUMEID% mit "DeleteOnTermination".
+		)
+)
 
 IF NOT [%CONNECTION_DATA%] == [] (
 	ECHO Verbindungsdaten: %CONNECTION_DATA%

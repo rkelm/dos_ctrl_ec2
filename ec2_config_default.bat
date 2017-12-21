@@ -11,8 +11,14 @@ REM same availability zone as the volume specified by id below, attaching
 REM the volume will fail. (Optional)
 SET SUBNETID=
 
-REM Set ID of existing Volume to mount to instance. (Required)
+REM Set ID or Tag-Key/Value of existing Volume or Snapshot to mount to instance. (Required)
+REM Volume overrides Snapshot, ID overrides Tag-Key/Value.
 SET VOLUMEID=
+SET VOLUMETAGKEY=
+SET VOLUMETAGVALUE=
+SET SNAPSHOTID=
+SET SNAPSHOTTAGKEY=
+SET SNAPSHOTTAGVALUE=
 
 REM Set the id of your security group (newtork firewall). Set this up in the AWS console
 REM The security group rules should at least define rules to allow tcp and/or udp traffic on the 

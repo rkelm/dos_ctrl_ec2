@@ -1,14 +1,23 @@
+* dos_ctrl_ec2: Kick funktioniert nicht, weil sich das Fenster schließt bevor der Name eingegeben werden kann?
+
 * Make VolumeId optional.
 	- Create volume from configured snapshot, while instance starts.
 	- Find Volume/Snapshot by Tag (Name + Value)
-* Optionally delete created volume after termination, if created by snapshot.
-	- Optionally create snapshot before deleting volume.
-		- Zero volume with "zerofree" before taking a snapshot.
+		- Instantiate volume from snapshot
+			- choose snapshot by ID or Tag
+			- volume definition overrides snapshop definition
+			- ID definition overrides tag definition
+        - Optionally delete created volume after termination, if created by snapshot.
+	    - Create snapshot for config mcd1 with tags
+		   - Zero volume with "zerofree" before taking a snapshot.
+				- Put a note about zerofree in readme.md dokumentation.
 
-* Terminate instance if attaching of volume fails.
-* ec2_create_snap set optional comment tag.
+* ec2_create_snap set optional comment tag by parameter or interactive input.
 
 * Pass environment variables to start.sh.
+
+* Setup cron job with reminder Mail, that server is running, in start.sh?
+	- Option in config.
 
 * Give feedback to user when prepare_server.sh/start.sh is done.
 * Query and show total number of running EC2 instances in launch and terminate BAT files. To ensure overview of total costs. Create STATUS BAT file to show if instance is running?

@@ -1,4 +1,5 @@
 # dos_ctrl_ec2
+State: RELEASED  
 MSDOS Batch files to launch and terminate an AWS EC2 linux instance running apps/services.
 
 I created these batch files so my kids could start and stop their minecraft server on AWS EC2 with 
